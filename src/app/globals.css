@@ -155,9 +155,29 @@ footer {
   height: 56px;
   display: grid;
   place-items: center;
-  padding-bottom: 4px;
-  font-size: 2rem;
+  padding: 0;
   line-height: 1;
+}
+
+.face-icon {
+  width: 34px;
+  height: 34px;
+  display: block;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.face-icon.ready {
+  background-image: url("/face-ready.svg");
+}
+
+.face-icon.won {
+  background-image: url("/face-won.svg");
+}
+
+.face-icon.lost {
+  background-image: url("/face-lost.svg");
 }
 
 .tool-row {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Cell = {
   mine: boolean;
@@ -170,6 +170,7 @@ export default function Home() {
   const [board, setBoard] = useState(() => createEmptyBoard(DIFFICULTIES[0]));
   const [status, setStatus] = useState<Status>("ready");
   const [magnifiers, setMagnifiers] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [showHints, setShowHints] = useState(false);
   const [lastStuckSignature, setLastStuckSignature] = useState("");
   const [message, setMessage] = useState("첫 칸은 언제나 안전합니다.");
@@ -178,7 +179,19 @@ export default function Home() {
   const remainingMines = difficulty.mines - board.filter((cell) => cell.flagged).length;
   const revealedSafeCells = countRevealedSafeCells(board);
   const totalSafeCells = board.length - difficulty.mines;
-  const face = status === "lost" ? "☹" : status === "won" ? "😎" : "☺";
+  const faceClass = status === "lost" ? "lost" : status === "won" ? "won" : "ready";
+
+  useEffect(() => {
+    if (status !== "playing") {
+      return;
+    }
+
+    const timerId = window.setInterval(() => {
+      setElapsedSeconds((seconds) => Math.min(999, seconds + 1));
+    }, 1000);
+
+    return () => window.clearInterval(timerId);
+  }, [status]);
 
   const checkWin = (nextBoard: Cell[]) => {
     if (countRevealedSafeCells(nextBoard) === totalSafeCells) {
@@ -216,6 +229,7 @@ export default function Home() {
     setBoard(createEmptyBoard(nextDifficulty));
     setStatus("ready");
     setMagnifiers(0);
+    setElapsedSeconds(0);
     setLastStuckSignature("");
     setMessage("첫 칸은 언제나 안전합니다.");
   };
@@ -298,10 +312,10 @@ export default function Home() {
             {formatCounter(remainingMines)}
           </div>
           <button className="face-button" aria-label="새 판" onClick={() => resetGame()}>
-            {face}
+            <span className={`face-icon ${faceClass}`} aria-hidden="true" />
           </button>
-          <div className="digital-counter" aria-label={`돋보기 ${magnifiers}`}>
-            {formatCounter(magnifiers)}
+          <div className="digital-counter" aria-label={`경과 시간 ${elapsedSeconds}초`}>
+            {formatCounter(elapsedSeconds)}
           </div>
         </div>
 
@@ -322,7 +336,7 @@ export default function Home() {
             disabled={magnifiers === 0 || status !== "playing"}
             onClick={useMagnifier}
           >
-            돋보기 사용
+            돋보기 사용 ({magnifiers})
           </button>
           <label className="hint-toggle">
             <input

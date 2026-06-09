@@ -10,6 +10,7 @@ type Cell = {
 };
 
 type Status = "ready" | "playing" | "won" | "lost";
+type ScanResult = "safe" | "mine";
 type Difficulty = {
   label: string;
   width: number;
@@ -171,6 +172,8 @@ export default function Home() {
   const [status, setStatus] = useState<Status>("ready");
   const [magnifiers, setMagnifiers] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [scanMode, setScanMode] = useState(false);
+  const [scannedCells, setScannedCells] = useState<Record<number, ScanResult>>({});
   const [showHints, setShowHints] = useState(false);
   const [lastStuckSignature, setLastStuckSignature] = useState("");
   const [message, setMessage] = useState("첫 칸은 언제나 안전합니다.");
@@ -196,6 +199,7 @@ export default function Home() {
   const checkWin = (nextBoard: Cell[]) => {
     if (countRevealedSafeCells(nextBoard) === totalSafeCells) {
       setStatus("won");
+      setScanMode(false);
       setMessage("모든 안전한 칸을 열었습니다. 찍기 없이 승리!");
       return true;
     }
@@ -230,12 +234,28 @@ export default function Home() {
     setStatus("ready");
     setMagnifiers(0);
     setElapsedSeconds(0);
+    setScanMode(false);
+    setScannedCells({});
     setLastStuckSignature("");
     setMessage("첫 칸은 언제나 안전합니다.");
   };
 
   const revealCell = (index: number) => {
     if (status === "lost" || status === "won" || board[index].flagged || board[index].revealed) {
+      return;
+    }
+
+    if (scanMode && status === "playing") {
+      const result: ScanResult = board[index].mine ? "mine" : "safe";
+
+      setScannedCells((current) => ({ ...current, [index]: result }));
+      setMagnifiers((count) => count - 1);
+      setScanMode(false);
+      setMessage(
+        result === "mine"
+          ? "돋보기가 알려줬습니다. 선택한 칸은 지뢰입니다."
+          : "돋보기가 알려줬습니다. 선택한 칸은 안전합니다.",
+      );
       return;
     }
 
@@ -247,6 +267,7 @@ export default function Home() {
       const lostBoard = revealAllMines(activeBoard);
       setBoard(lostBoard);
       setStatus("lost");
+      setScanMode(false);
       setMessage("지뢰를 밟았습니다. 새 판으로 다시 도전하세요.");
       return;
     }
@@ -276,32 +297,14 @@ export default function Home() {
       return;
     }
 
-    const candidates = board
-      .map((cell, index) => ({ cell, index }))
-      .filter(({ cell }) => !cell.revealed && !cell.flagged && !cell.mine);
-
-    if (candidates.length === 0) {
+    if (scanMode) {
+      setScanMode(false);
+      setMessage("돋보기 선택 모드를 취소했습니다.");
       return;
     }
 
-    const safestKnownMove = [...logic.safeMoves].find((index) => !board[index].flagged);
-    const targetIndex =
-      safestKnownMove ?? candidates[Math.floor(Math.random() * candidates.length)].index;
-    const nextBoard = revealFrom(board, targetIndex, difficulty);
-
-    setMagnifiers((count) => count - 1);
-    setBoard(nextBoard);
-    setMessage("돋보기로 안전한 칸 하나를 확인했습니다.");
-
-    if (!checkWin(nextBoard)) {
-      const nextLogic = getLogicState(nextBoard, difficulty);
-      if (nextLogic.safeMoves.size > 0 || nextLogic.mineMoves.size > 0) {
-        setMessage("돋보기로 길이 열렸습니다. 다시 논리로 이어가세요.");
-        return;
-      }
-
-      maybeGrantMagnifier(nextBoard);
-    }
+    setScanMode(true);
+    setMessage("돋보기를 쓸 칸을 하나 선택하세요. 칸은 열리지 않고 지뢰 여부만 확인합니다.");
   };
 
   return (
@@ -332,11 +335,11 @@ export default function Home() {
             ))}
           </div>
           <button
-            className="magnifier-button"
+            className={`magnifier-button ${scanMode ? "active" : ""}`}
             disabled={magnifiers === 0 || status !== "playing"}
             onClick={useMagnifier}
           >
-            돋보기 사용 ({magnifiers})
+            {scanMode ? `확인할 칸 선택 중 (${magnifiers})` : `돋보기 사용 (${magnifiers})`}
           </button>
           <label className="hint-toggle">
             <input
@@ -360,12 +363,17 @@ export default function Home() {
           {board.map((cell, index) => {
             const isHintSafe = showHints && logic.safeMoves.has(index) && !cell.revealed;
             const isHintMine = showHints && logic.mineMoves.has(index) && !cell.revealed;
+            const scanResult = scannedCells[index];
             const label = cell.revealed
               ? cell.mine
                 ? "●"
                 : cell.adjacent || ""
               : cell.flagged
                 ? "⚑"
+                : scanResult === "mine"
+                  ? "지"
+                  : scanResult === "safe"
+                    ? "안"
                 : "";
 
             return (
@@ -376,6 +384,8 @@ export default function Home() {
                   cell.revealed ? "revealed" : "",
                   cell.flagged ? "flagged" : "",
                   cell.mine && cell.revealed ? "mine" : "",
+                  scanResult ? `scanned-${scanResult}` : "",
+                  scanMode && !cell.revealed && !cell.flagged ? "scan-target" : "",
                   isHintSafe ? "hint-safe" : "",
                   isHintMine ? "hint-mine" : "",
                 ].join(" ")}
@@ -395,7 +405,7 @@ export default function Home() {
 
         <p className="rule-note">
           우클릭으로 깃발을 꽂습니다. 확정 가능한 안전 칸이나 지뢰가 없을 때만 돋보기가
-          지급됩니다.
+          지급되며, 돋보기는 선택한 칸의 지뢰 여부만 알려줍니다.
         </p>
       </div>
     </section>

@@ -19,7 +19,7 @@ type Difficulty = {
 };
 
 const DIFFICULTIES: Difficulty[] = [
-  { label: "입문1", width: 9, height: 9, mines: 10 },
+  { label: "입문", width: 9, height: 9, mines: 10 },
   { label: "보통", width: 12, height: 10, mines: 18 },
   { label: "도전", width: 16, height: 12, mines: 36 },
 ];

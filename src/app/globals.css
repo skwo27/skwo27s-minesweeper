@@ -10,6 +10,7 @@
   --digit-red: #ff1d00;
   --danger: #ff1d00;
   --safe: #008000;
+  --board-size: min(calc(100vw - 64px), 520px);
 }
 
 html {
@@ -94,7 +95,7 @@ footer {
   grid-template-columns: max-content 1fr max-content;
   align-items: center;
   gap: 12px;
-  width: 520px;
+  width: var(--board-size);
   max-width: 100%;
   padding: 8px 12px;
   background: var(--classic-face);
@@ -186,7 +187,7 @@ footer {
   grid-template-columns: 1fr max-content max-content;
   align-items: center;
   gap: 8px;
-  width: 520px;
+  width: var(--board-size);
   max-width: 100%;
   min-height: 48px;
   padding: 7px;
@@ -260,7 +261,7 @@ footer {
 .mine-board {
   display: grid;
   gap: 0;
-  width: min(100vw - 64px, 520px);
+  width: var(--board-size);
   margin: 0 auto;
   padding: 4px;
   background: var(--classic-face);
@@ -363,7 +364,7 @@ footer {
 }
 
 .rule-note {
-  width: min(100vw - 64px, 520px);
+  width: var(--board-size);
   color: #222;
   font-size: 0.84rem;
   line-height: 1.45;
@@ -373,6 +374,10 @@ footer {
 }
 
 @media (max-width: 720px) {
+  :root {
+    --board-size: min(calc(100vw - 44px), 520px);
+  }
+
   .game-shell {
     padding: 10px;
   }
@@ -421,5 +426,169 @@ footer {
 
   .cell {
     border-width: 3px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --board-size: calc(100vw - 34px);
+  }
+
+  .game-shell {
+    align-items: start;
+    padding: 8px;
+  }
+
+  .game-panel {
+    gap: 8px;
+    padding: 8px;
+    border-width: 3px;
+    box-shadow:
+      inset -1px -1px 0 var(--classic-darker),
+      inset 1px 1px 0 #dfdfdf;
+  }
+
+  .game-topbar {
+    grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+    gap: 6px;
+    padding: 6px;
+    border-width: 3px;
+  }
+
+  .digital-counter {
+    min-width: 0;
+    width: 100%;
+    height: 40px;
+    padding: 2px 4px 0;
+    border-width: 2px;
+    font-size: 1.92rem;
+  }
+
+  .face-button {
+    width: 44px;
+    height: 44px;
+    border-width: 3px;
+  }
+
+  .face-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .tool-row {
+    gap: 6px;
+    min-height: 0;
+    padding: 6px;
+    border-width: 3px;
+  }
+
+  .difficulty-tabs {
+    gap: 4px;
+  }
+
+  .difficulty-tabs button,
+  .magnifier-button,
+  .hint-toggle {
+    min-height: 32px;
+    padding: 0 6px;
+    border-width: 3px;
+    font-size: 0.78rem;
+  }
+
+  .hint-toggle {
+    justify-content: center;
+  }
+
+  .hint-toggle input {
+    width: 14px;
+    height: 14px;
+  }
+
+  .tool-row p {
+    font-size: 0.78rem;
+    line-height: 1.35;
+    word-break: keep-all;
+  }
+
+  .mine-board {
+    padding: 3px;
+    border-width: 3px;
+  }
+
+  .cell {
+    border-top-width: 3px;
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-bottom-width: 3px;
+    font-size: 1rem;
+  }
+
+  .cell.flagged {
+    font-size: 1rem;
+  }
+
+  .cell.hint-safe,
+  .cell.hint-mine {
+    outline-width: 3px;
+    outline-offset: -4px;
+  }
+
+  .rule-note {
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+}
+
+@media (max-width: 360px) {
+  :root {
+    --board-size: calc(100vw - 28px);
+  }
+
+  .game-shell {
+    padding: 6px;
+  }
+
+  .game-panel {
+    padding: 6px;
+  }
+
+  .game-topbar {
+    grid-template-columns: minmax(0, 1fr) 38px minmax(0, 1fr);
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .digital-counter {
+    height: 34px;
+    font-size: 1.58rem;
+  }
+
+  .face-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .face-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .difficulty-tabs button,
+  .magnifier-button,
+  .hint-toggle {
+    min-height: 30px;
+    font-size: 0.72rem;
+  }
+
+  .tool-row p {
+    font-size: 0.72rem;
+  }
+
+  .cell {
+    border-top-width: 2px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    font-size: 0.88rem;
   }
 }

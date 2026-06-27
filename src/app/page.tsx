@@ -471,8 +471,10 @@ export default function Home() {
         </div>
 
         <p className="rule-note">
-          우클릭 또는 길게 누르기로 깃발을 꽂습니다. 확정 가능한 안전 칸이나 지뢰가
-          없을 때만 돋보기가 지급되며, 돋보기는 선택한 칸의 지뢰 여부만 알려줍니다.
+          <span className="desktop-note">우클릭으로 깃발을 꽂습니다.</span>
+          <span className="mobile-note">길게 누르기로 깃발을 꽂습니다.</span>
+          {" "}확정 가능한 안전 칸이나 지뢰가 없을 때만 돋보기가 지급되며, 돋보기는
+          선택한 칸의 지뢰 여부만 알려줍니다.
         </p>
       </div>
     </section>

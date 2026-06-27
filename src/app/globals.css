@@ -377,6 +377,10 @@ footer {
   word-break: keep-all;
 }
 
+.mobile-note {
+  display: none;
+}
+
 @media (max-width: 720px) {
   :root {
     --board-size: min(calc(100vw - 44px), 520px);
@@ -540,6 +544,14 @@ footer {
   .rule-note {
     font-size: 0.75rem;
     line-height: 1.35;
+  }
+
+  .desktop-note {
+    display: none;
+  }
+
+  .mobile-note {
+    display: inline;
   }
 }
 

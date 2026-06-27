@@ -286,6 +286,10 @@ footer {
   font-weight: 900;
   line-height: 1;
   text-align: center;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
 }
 
 .cell:hover {

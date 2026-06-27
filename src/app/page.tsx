@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type Cell = {
   mine: boolean;
@@ -177,6 +177,8 @@ export default function Home() {
   const [showHints, setShowHints] = useState(false);
   const [lastStuckSignature, setLastStuckSignature] = useState("");
   const [message, setMessage] = useState("첫 칸은 언제나 안전합니다.");
+  const longPressTimerRef = useRef<number | null>(null);
+  const longPressHandledRef = useRef(false);
 
   const logic = useMemo(() => getLogicState(board, difficulty), [board, difficulty]);
   const remainingMines = difficulty.mines - board.filter((cell) => cell.flagged).length;
@@ -195,6 +197,21 @@ export default function Home() {
 
     return () => window.clearInterval(timerId);
   }, [status]);
+
+  useEffect(() => {
+    return () => {
+      if (longPressTimerRef.current !== null) {
+        window.clearTimeout(longPressTimerRef.current);
+      }
+    };
+  }, []);
+
+  const clearLongPressTimer = () => {
+    if (longPressTimerRef.current !== null) {
+      window.clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
 
   const checkWin = (nextBoard: Cell[]) => {
     if (countRevealedSafeCells(nextBoard) === totalSafeCells) {
@@ -240,7 +257,43 @@ export default function Home() {
     setMessage("첫 칸은 언제나 안전합니다.");
   };
 
+  const startLongPressFlag = (index: number) => {
+    clearLongPressTimer();
+    longPressHandledRef.current = false;
+
+    if (
+      scanMode ||
+      status === "lost" ||
+      status === "won" ||
+      status === "ready" ||
+      board[index].revealed
+    ) {
+      return;
+    }
+
+    longPressTimerRef.current = window.setTimeout(() => {
+      longPressHandledRef.current = true;
+      longPressTimerRef.current = null;
+      toggleFlag(index);
+    }, 550);
+  };
+
+  const releaseLongPressFlag = () => {
+    clearLongPressTimer();
+
+    if (longPressHandledRef.current) {
+      window.setTimeout(() => {
+        longPressHandledRef.current = false;
+      }, 250);
+    }
+  };
+
   const revealCell = (index: number) => {
+    if (longPressHandledRef.current) {
+      longPressHandledRef.current = false;
+      return;
+    }
+
     if (status === "lost" || status === "won" || board[index].flagged || board[index].revealed) {
       return;
     }
@@ -394,8 +447,22 @@ export default function Home() {
                 onClick={() => revealCell(index)}
                 onContextMenu={(event) => {
                   event.preventDefault();
+                  if (longPressHandledRef.current) {
+                    return;
+                  }
+
                   toggleFlag(index);
                 }}
+                onPointerCancel={releaseLongPressFlag}
+                onPointerDown={(event) => {
+                  if (event.pointerType === "mouse") {
+                    return;
+                  }
+
+                  startLongPressFlag(index);
+                }}
+                onPointerLeave={releaseLongPressFlag}
+                onPointerUp={releaseLongPressFlag}
               >
                 {label}
               </button>
@@ -404,8 +471,8 @@ export default function Home() {
         </div>
 
         <p className="rule-note">
-          우클릭으로 깃발을 꽂습니다. 확정 가능한 안전 칸이나 지뢰가 없을 때만 돋보기가
-          지급되며, 돋보기는 선택한 칸의 지뢰 여부만 알려줍니다.
+          우클릭 또는 길게 누르기로 깃발을 꽂습니다. 확정 가능한 안전 칸이나 지뢰가
+          없을 때만 돋보기가 지급되며, 돋보기는 선택한 칸의 지뢰 여부만 알려줍니다.
         </p>
       </div>
     </section>

@@ -170,7 +170,7 @@ export default function Home() {
   const [difficulty, setDifficulty] = useState(DIFFICULTIES[0]);
   const [board, setBoard] = useState(() => createEmptyBoard(DIFFICULTIES[0]));
   const [status, setStatus] = useState<Status>("ready");
-  const [magnifiers, setMagnifiers] = useState(0);
+  const [hasMagnifier, setHasMagnifier] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [scanMode, setScanMode] = useState(false);
   const [scannedCells, setScannedCells] = useState<Record<number, ScanResult>>({});
@@ -228,10 +228,15 @@ export default function Home() {
     const nextLogic = getLogicState(nextBoard, difficulty);
     const signature = boardSignature(nextBoard);
 
-    if (status !== "lost" && nextLogic.isStuck && signature !== lastStuckSignature) {
-      setMagnifiers((count) => count + 1);
+    if (
+      status !== "lost" &&
+      !hasMagnifier &&
+      nextLogic.isStuck &&
+      signature !== lastStuckSignature
+    ) {
+      setHasMagnifier(true);
       setLastStuckSignature(signature);
-      setMessage("논리로 확정할 수 있는 칸이 없습니다. 돋보기 1개를 지급했습니다.");
+      setMessage("논리로 확정할 수 있는 칸이 없습니다. 돋보기를 사용할 수 있습니다.");
       return;
     }
 
@@ -249,7 +254,7 @@ export default function Home() {
     setDifficulty(nextDifficulty);
     setBoard(createEmptyBoard(nextDifficulty));
     setStatus("ready");
-    setMagnifiers(0);
+    setHasMagnifier(false);
     setElapsedSeconds(0);
     setScanMode(false);
     setScannedCells({});
@@ -302,7 +307,7 @@ export default function Home() {
       const result: ScanResult = board[index].mine ? "mine" : "safe";
 
       setScannedCells((current) => ({ ...current, [index]: result }));
-      setMagnifiers((count) => count - 1);
+      setHasMagnifier(false);
       setScanMode(false);
       setMessage(
         result === "mine"
@@ -342,11 +347,10 @@ export default function Home() {
       cellIndex === index ? { ...cell, flagged: !cell.flagged } : cell,
     );
     setBoard(nextBoard);
-    maybeGrantMagnifier(nextBoard);
   };
 
   const useMagnifier = () => {
-    if (magnifiers <= 0 || status !== "playing") {
+    if (!hasMagnifier || status !== "playing") {
       return;
     }
 
@@ -389,10 +393,10 @@ export default function Home() {
           </div>
           <button
             className={`magnifier-button ${scanMode ? "active" : ""}`}
-            disabled={magnifiers === 0 || status !== "playing"}
+            disabled={!hasMagnifier || status !== "playing"}
             onClick={useMagnifier}
           >
-            {scanMode ? `확인할 칸 선택 중 (${magnifiers})` : `돋보기 사용 (${magnifiers})`}
+            {scanMode ? "확인할 칸 선택 중" : hasMagnifier ? "돋보기 사용 가능" : "돋보기 없음"}
           </button>
           <label className="hint-toggle">
             <input

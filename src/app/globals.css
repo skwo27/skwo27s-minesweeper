@@ -219,7 +219,10 @@ footer {
 .magnifier-button {
   min-height: 34px;
   padding: 0 10px;
+  font-size: 0.86rem;
   font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .magnifier-button.active {

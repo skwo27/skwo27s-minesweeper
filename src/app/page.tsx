@@ -398,14 +398,14 @@ export default function Home() {
           >
             {scanMode ? "확인할 칸 선택 중" : hasMagnifier ? "돋보기 사용 가능" : "돋보기 없음"}
           </button>
-          <label className="hint-toggle">
-            <input
-              checked={showHints}
-              onChange={(event) => setShowHints(event.target.checked)}
-              type="checkbox"
-            />
-            <span>힌트 표시</span>
-          </label>
+          <button
+            aria-pressed={showHints}
+            className={`hint-toggle ${showHints ? "active" : ""}`}
+            onClick={() => setShowHints((current) => !current)}
+            type="button"
+          >
+            힌트 표시
+          </button>
           <p>
             {revealedSafeCells}/{totalSafeCells} · {message}
           </p>

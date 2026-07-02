@@ -238,19 +238,18 @@ footer {
 .hint-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   min-height: 34px;
   padding: 0 10px;
   font-size: 0.86rem;
   font-weight: 800;
+  line-height: 1;
   white-space: nowrap;
 }
 
-.hint-toggle input {
-  width: 16px;
-  height: 16px;
-  accent-color: #000080;
-  cursor: pointer;
+.hint-toggle.active {
+  color: #fff;
+  background: #000080;
 }
 
 .tool-row p {
@@ -504,15 +503,6 @@ footer {
     padding: 0 6px;
     border-width: 3px;
     font-size: 0.78rem;
-  }
-
-  .hint-toggle {
-    justify-content: center;
-  }
-
-  .hint-toggle input {
-    width: 14px;
-    height: 14px;
   }
 
   .tool-row p {

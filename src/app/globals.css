@@ -129,7 +129,8 @@ footer {
 }
 
 .face-button,
-.tool-actions button {
+.tool-actions button,
+.custom-size-field {
   border-radius: 0;
   background: var(--classic-face);
   border-top: 4px solid var(--classic-light);
@@ -200,6 +201,11 @@ footer {
   gap: 5px;
 }
 
+.tool-actions.difficulty-mode,
+.tool-actions.custom-mode {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .tool-actions button {
   min-height: 34px;
   padding: 0 10px;
@@ -212,13 +218,56 @@ footer {
 .tool-actions button.active {
   color: #fff;
   background: #000080;
-  cursor: default;
   opacity: 1;
 }
 
 .tool-actions button:disabled {
   color: #777;
   cursor: not-allowed;
+}
+
+.custom-size-field {
+  min-width: 0;
+  min-height: 34px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 5px;
+  padding: 0 6px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.custom-size-field input {
+  width: 100%;
+  min-width: 0;
+  height: 24px;
+  border-top: 3px solid var(--classic-dark);
+  border-left: 3px solid var(--classic-dark);
+  border-right: 3px solid #dfdfdf;
+  border-bottom: 3px solid #dfdfdf;
+  background: #ffffff;
+  color: #111111;
+  font: inherit;
+  text-align: center;
+  box-shadow: inset 0 0 0 1px #bdbdbd;
+}
+
+.custom-size-field input:focus {
+  outline: 0;
+  box-shadow: inset 0 0 0 1px #000080;
+}
+
+.custom-size-field input::-webkit-outer-spin-button,
+.custom-size-field input::-webkit-inner-spin-button {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.custom-size-field input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 .tool-row p {
@@ -393,6 +442,11 @@ footer {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .tool-actions.difficulty-mode,
+  .tool-actions.custom-mode {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
   .mine-board {
     padding: 3px;
     border-width: 4px;
@@ -460,11 +514,17 @@ footer {
     gap: 4px;
   }
 
-  .tool-actions button {
+  .tool-actions button,
+  .custom-size-field {
     min-height: 32px;
     padding: 0 6px;
     border-width: 3px;
     font-size: 0.78rem;
+  }
+
+  .tool-actions.difficulty-mode,
+  .tool-actions.custom-mode {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .tool-row p {
@@ -544,7 +604,8 @@ footer {
     height: 24px;
   }
 
-  .tool-actions button {
+  .tool-actions button,
+  .custom-size-field {
     min-height: 30px;
     font-size: 0.72rem;
   }

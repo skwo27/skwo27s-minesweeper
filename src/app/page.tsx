@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type Cell = {
   mine: boolean;
@@ -11,6 +11,7 @@ type Cell = {
 
 type Status = "ready" | "playing" | "won" | "lost";
 type ScanResult = "safe" | "mine";
+type ToolMode = "main" | "difficulty" | "custom";
 type Difficulty = {
   label: string;
   width: number;
@@ -23,6 +24,10 @@ const DIFFICULTIES: Difficulty[] = [
   { label: "보통", width: 12, height: 10, mines: 18 },
   { label: "도전", width: 16, height: 12, mines: 36 },
 ];
+
+const CUSTOM_MIN_SIZE = 5;
+const CUSTOM_MAX_WIDTH = 30;
+const CUSTOM_MAX_HEIGHT = 24;
 
 const DIRECTIONS = [-1, 0, 1].flatMap((dy) =>
   [-1, 0, 1].map((dx) => ({ dx, dy })),
@@ -166,6 +171,29 @@ const countRevealedSafeCells = (board: Cell[]) =>
 const formatCounter = (value: number) =>
   Math.max(-99, Math.min(999, value)).toString().padStart(3, "0");
 
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+
+const parseCustomSize = (value: string, max: number) => {
+  const parsed = Number.parseInt(value, 10);
+
+  if (Number.isNaN(parsed)) {
+    return CUSTOM_MIN_SIZE;
+  }
+
+  return clamp(parsed, CUSTOM_MIN_SIZE, max);
+};
+
+const getMaxCustomMines = (width: number, height: number) =>
+  Math.max(1, width * height - 9);
+
+const createCustomDifficulty = (width: number, height: number, mines: number): Difficulty => ({
+  label: "사용자",
+  width,
+  height,
+  mines,
+});
+
 export default function Home() {
   const [difficulty, setDifficulty] = useState(DIFFICULTIES[0]);
   const [board, setBoard] = useState(() => createEmptyBoard(DIFFICULTIES[0]));
@@ -175,7 +203,10 @@ export default function Home() {
   const [scanMode, setScanMode] = useState(false);
   const [scannedCells, setScannedCells] = useState<Record<number, ScanResult>>({});
   const [showHints, setShowHints] = useState(false);
-  const [showDifficultyOptions, setShowDifficultyOptions] = useState(false);
+  const [toolMode, setToolMode] = useState<ToolMode>("main");
+  const [customWidthInput, setCustomWidthInput] = useState(String(DIFFICULTIES[0].width));
+  const [customHeightInput, setCustomHeightInput] = useState(String(DIFFICULTIES[0].height));
+  const [customMinesInput, setCustomMinesInput] = useState(String(DIFFICULTIES[0].mines));
   const [lastStuckSignature, setLastStuckSignature] = useState("");
   const [message, setMessage] = useState("첫 칸은 언제나 안전합니다.");
   const longPressTimerRef = useRef<number | null>(null);
@@ -186,6 +217,10 @@ export default function Home() {
   const revealedSafeCells = countRevealedSafeCells(board);
   const totalSafeCells = board.length - difficulty.mines;
   const faceClass = status === "lost" ? "lost" : status === "won" ? "won" : "ready";
+  const customMineLimit = getMaxCustomMines(
+    parseCustomSize(customWidthInput, CUSTOM_MAX_WIDTH),
+    parseCustomSize(customHeightInput, CUSTOM_MAX_HEIGHT),
+  );
 
   useEffect(() => {
     if (status !== "playing") {
@@ -258,7 +293,7 @@ export default function Home() {
     setHasMagnifier(false);
     setElapsedSeconds(0);
     setScanMode(false);
-    setShowDifficultyOptions(false);
+    setToolMode("main");
     setScannedCells({});
     setLastStuckSignature("");
     setMessage("첫 칸은 언제나 안전합니다.");
@@ -368,12 +403,46 @@ export default function Home() {
 
   const selectDifficulty = (nextDifficulty: Difficulty) => {
     if (nextDifficulty.label === difficulty.label) {
-      setShowDifficultyOptions(false);
+      setToolMode("main");
       return;
     }
 
     resetGame(nextDifficulty);
   };
+
+  const openCustomSettings = () => {
+    setCustomWidthInput(String(difficulty.width));
+    setCustomHeightInput(String(difficulty.height));
+    setCustomMinesInput(String(difficulty.mines));
+    setToolMode("custom");
+  };
+
+  const applyCustomDifficulty = () => {
+    const width = parseCustomSize(customWidthInput, CUSTOM_MAX_WIDTH);
+    const height = parseCustomSize(customHeightInput, CUSTOM_MAX_HEIGHT);
+    const mineLimit = getMaxCustomMines(width, height);
+    const mines = clamp(Number.parseInt(customMinesInput, 10) || 1, 1, mineLimit);
+
+    setCustomWidthInput(String(width));
+    setCustomHeightInput(String(height));
+    setCustomMinesInput(String(mines));
+    resetGame(createCustomDifficulty(width, height, mines));
+  };
+
+  const applyCustomDifficultyOnEnter = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    applyCustomDifficulty();
+  };
+
+  const toolActionsClassName = [
+    "tool-actions",
+    toolMode === "difficulty" ? "difficulty-mode" : "",
+    toolMode === "custom" ? "custom-mode" : "",
+  ].join(" ");
 
   return (
     <section className="game-shell">
@@ -392,23 +461,85 @@ export default function Home() {
 
         <div className="tool-row">
           <div
-            className={`tool-actions ${showDifficultyOptions ? "difficulty-mode" : ""}`}
-            aria-label={showDifficultyOptions ? "난이도 선택" : "게임 도구"}
+            className={toolActionsClassName}
+            aria-label={
+              toolMode === "main"
+                ? "게임 도구"
+                : toolMode === "custom"
+                  ? "사용자 난이도 설정"
+                  : "난이도 선택"
+            }
           >
-            {showDifficultyOptions ? DIFFICULTIES.map((item) => (
-              <button
-                aria-current={item.label === difficulty.label ? "true" : undefined}
-                className={item.label === difficulty.label ? "active" : ""}
-                key={item.label}
-                onClick={() => selectDifficulty(item)}
-                type="button"
-              >
-                {item.label}
-              </button>
-            )) : (
+            {toolMode === "difficulty" ? (
+              <>
+                {DIFFICULTIES.map((item) => (
+                  <button
+                    aria-current={item.label === difficulty.label ? "true" : undefined}
+                    className={item.label === difficulty.label ? "active" : ""}
+                    key={item.label}
+                    onClick={() => selectDifficulty(item)}
+                    type="button"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+                <button
+                  className={difficulty.label === "사용자" ? "active" : ""}
+                  onClick={openCustomSettings}
+                  type="button"
+                >
+                  사용자 설정
+                </button>
+              </>
+            ) : toolMode === "custom" ? (
+              <>
+                <label className="custom-size-field">
+                  <span>열</span>
+                  <input
+                    aria-label="열 크기"
+                    inputMode="numeric"
+                    max={CUSTOM_MAX_WIDTH}
+                    min={CUSTOM_MIN_SIZE}
+                    onChange={(event) => setCustomWidthInput(event.target.value)}
+                    onKeyDown={applyCustomDifficultyOnEnter}
+                    type="number"
+                    value={customWidthInput}
+                  />
+                </label>
+                <label className="custom-size-field">
+                  <span>행</span>
+                  <input
+                    aria-label="행 크기"
+                    inputMode="numeric"
+                    max={CUSTOM_MAX_HEIGHT}
+                    min={CUSTOM_MIN_SIZE}
+                    onChange={(event) => setCustomHeightInput(event.target.value)}
+                    onKeyDown={applyCustomDifficultyOnEnter}
+                    type="number"
+                    value={customHeightInput}
+                  />
+                </label>
+                <label className="custom-size-field">
+                  <span>지뢰</span>
+                  <input
+                    aria-label="지뢰 수"
+                    inputMode="numeric"
+                    max={customMineLimit}
+                    min={1}
+                    onChange={(event) => setCustomMinesInput(event.target.value)}
+                    onKeyDown={applyCustomDifficultyOnEnter}
+                    type="number"
+                    value={customMinesInput}
+                  />
+                </label>
+                <button onClick={applyCustomDifficulty} type="button">
+                  확인
+                </button>
+              </>
+            ) : (
               <>
                 <button
-                  onClick={() => setShowDifficultyOptions(true)}
+                  onClick={() => setToolMode("difficulty")}
                   type="button"
                 >
                   난이도 설정

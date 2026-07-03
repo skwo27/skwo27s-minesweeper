@@ -21,13 +21,12 @@ type Difficulty = {
 
 const DIFFICULTIES: Difficulty[] = [
   { label: "쉬움", width: 9, height: 9, mines: 10 },
-  { label: "보통", width: 12, height: 10, mines: 18 },
-  { label: "도전", width: 16, height: 12, mines: 36 },
+  { label: "보통", width: 14, height: 14, mines: 40 },
+  { label: "도전", width: 22, height: 22, mines: 60 },
 ];
 
 const CUSTOM_MIN_SIZE = 5;
 const CUSTOM_MAX_WIDTH = 30;
-const CUSTOM_MAX_HEIGHT = 24;
 
 const DIRECTIONS = [-1, 0, 1].flatMap((dy) =>
   [-1, 0, 1].map((dx) => ({ dx, dy })),
@@ -184,8 +183,18 @@ const parseCustomSize = (value: string, max: number) => {
   return clamp(parsed, CUSTOM_MIN_SIZE, max);
 };
 
+const parseCustomHeight = (value: string) => {
+  const parsed = Number.parseInt(value, 10);
+
+  if (Number.isNaN(parsed)) {
+    return CUSTOM_MIN_SIZE;
+  }
+
+  return Math.max(CUSTOM_MIN_SIZE, parsed);
+};
+
 const getMaxCustomMines = (width: number, height: number) =>
-  Math.max(1, width * height - 9);
+  Math.max(1, width * height - 1);
 
 const createCustomDifficulty = (width: number, height: number, mines: number): Difficulty => ({
   label: "사용자",
@@ -217,10 +226,21 @@ export default function Home() {
   const revealedSafeCells = countRevealedSafeCells(board);
   const totalSafeCells = board.length - difficulty.mines;
   const faceClass = status === "lost" ? "lost" : status === "won" ? "won" : "ready";
+  const largestBoardSide = Math.max(difficulty.width, difficulty.height);
+  const boardDensityClass =
+    largestBoardSide >= 20 ? "dense-board" : largestBoardSide >= 14 ? "medium-board" : "";
   const customMineLimit = getMaxCustomMines(
     parseCustomSize(customWidthInput, CUSTOM_MAX_WIDTH),
-    parseCustomSize(customHeightInput, CUSTOM_MAX_HEIGHT),
+    parseCustomHeight(customHeightInput),
   );
+  const customCellCount =
+    parseCustomSize(customWidthInput, CUSTOM_MAX_WIDTH) * parseCustomHeight(customHeightInput);
+  const toolMessage =
+    toolMode === "custom"
+      ? `열은 ${CUSTOM_MIN_SIZE}~${CUSTOM_MAX_WIDTH}개, 행은 ${CUSTOM_MIN_SIZE}개 이상, 지뢰는 행과 열의 곱(${customCellCount})보다 작게 입력하세요.`
+      : toolMode === "difficulty"
+        ? "난이도를 변경하면 현재 게임 진행사항이 초기화됩니다."
+      : `${revealedSafeCells}/${totalSafeCells} · ${message}`;
 
   useEffect(() => {
     if (status !== "playing") {
@@ -419,7 +439,7 @@ export default function Home() {
 
   const applyCustomDifficulty = () => {
     const width = parseCustomSize(customWidthInput, CUSTOM_MAX_WIDTH);
-    const height = parseCustomSize(customHeightInput, CUSTOM_MAX_HEIGHT);
+    const height = parseCustomHeight(customHeightInput);
     const mineLimit = getMaxCustomMines(width, height);
     const mines = clamp(Number.parseInt(customMinesInput, 10) || 1, 1, mineLimit);
 
@@ -511,7 +531,6 @@ export default function Home() {
                   <input
                     aria-label="행 크기"
                     inputMode="numeric"
-                    max={CUSTOM_MAX_HEIGHT}
                     min={CUSTOM_MIN_SIZE}
                     onChange={(event) => setCustomHeightInput(event.target.value)}
                     onKeyDown={applyCustomDifficultyOnEnter}
@@ -564,12 +583,12 @@ export default function Home() {
             )}
           </div>
           <p>
-            {revealedSafeCells}/{totalSafeCells} · {message}
+            {toolMessage}
           </p>
         </div>
 
         <div
-          className="mine-board"
+          className={["mine-board", boardDensityClass].filter(Boolean).join(" ")}
           style={{
             gridTemplateColumns: `repeat(${difficulty.width}, minmax(0, 1fr))`,
           }}

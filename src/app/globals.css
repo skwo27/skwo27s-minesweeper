@@ -11,6 +11,8 @@
   --danger: #ff1d00;
   --safe: #008000;
   --board-size: min(calc(100vw - 64px), 520px);
+  --magnifier-button-width: 160px;
+  --hint-button-width: 112px;
 }
 
 html {
@@ -184,7 +186,7 @@ footer {
 
 .tool-row {
   display: grid;
-  grid-template-columns: 1fr max-content max-content;
+  grid-template-columns: minmax(0, 1fr) var(--magnifier-button-width) var(--hint-button-width);
   align-items: center;
   gap: 8px;
   width: var(--board-size);
@@ -217,6 +219,7 @@ footer {
 }
 
 .magnifier-button {
+  width: var(--magnifier-button-width);
   min-height: 34px;
   padding: 0 10px;
   font-size: 0.86rem;
@@ -239,6 +242,7 @@ footer {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: var(--hint-button-width);
   min-height: 34px;
   padding: 0 10px;
   font-size: 0.86rem;

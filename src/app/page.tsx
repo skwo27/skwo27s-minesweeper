@@ -19,7 +19,7 @@ type Difficulty = {
 };
 
 const DIFFICULTIES: Difficulty[] = [
-  { label: "입문", width: 9, height: 9, mines: 10 },
+  { label: "쉬움", width: 9, height: 9, mines: 10 },
   { label: "보통", width: 12, height: 10, mines: 18 },
   { label: "도전", width: 16, height: 12, mines: 36 },
 ];
@@ -175,6 +175,7 @@ export default function Home() {
   const [scanMode, setScanMode] = useState(false);
   const [scannedCells, setScannedCells] = useState<Record<number, ScanResult>>({});
   const [showHints, setShowHints] = useState(false);
+  const [showDifficultyOptions, setShowDifficultyOptions] = useState(false);
   const [lastStuckSignature, setLastStuckSignature] = useState("");
   const [message, setMessage] = useState("첫 칸은 언제나 안전합니다.");
   const longPressTimerRef = useRef<number | null>(null);
@@ -257,6 +258,7 @@ export default function Home() {
     setHasMagnifier(false);
     setElapsedSeconds(0);
     setScanMode(false);
+    setShowDifficultyOptions(false);
     setScannedCells({});
     setLastStuckSignature("");
     setMessage("첫 칸은 언제나 안전합니다.");
@@ -364,6 +366,15 @@ export default function Home() {
     setMessage("돋보기를 쓸 칸을 하나 선택하세요. 칸은 열리지 않고 지뢰 여부만 확인합니다.");
   };
 
+  const selectDifficulty = (nextDifficulty: Difficulty) => {
+    if (nextDifficulty.label === difficulty.label) {
+      setShowDifficultyOptions(false);
+      return;
+    }
+
+    resetGame(nextDifficulty);
+  };
+
   return (
     <section className="game-shell">
       <div className="game-panel">
@@ -380,32 +391,47 @@ export default function Home() {
         </div>
 
         <div className="tool-row">
-          <div className="difficulty-tabs" aria-label="난이도 선택">
-            {DIFFICULTIES.map((item) => (
+          <div
+            className={`tool-actions ${showDifficultyOptions ? "difficulty-mode" : ""}`}
+            aria-label={showDifficultyOptions ? "난이도 선택" : "게임 도구"}
+          >
+            {showDifficultyOptions ? DIFFICULTIES.map((item) => (
               <button
+                aria-current={item.label === difficulty.label ? "true" : undefined}
                 className={item.label === difficulty.label ? "active" : ""}
                 key={item.label}
-                onClick={() => resetGame(item)}
+                onClick={() => selectDifficulty(item)}
+                type="button"
               >
                 {item.label}
               </button>
-            ))}
+            )) : (
+              <>
+                <button
+                  onClick={() => setShowDifficultyOptions(true)}
+                  type="button"
+                >
+                  난이도 설정
+                </button>
+                <button
+                  className={scanMode ? "active" : ""}
+                  disabled={!hasMagnifier || status !== "playing"}
+                  onClick={useMagnifier}
+                  type="button"
+                >
+                  돋보기 사용
+                </button>
+                <button
+                  aria-pressed={showHints}
+                  className={showHints ? "active" : ""}
+                  onClick={() => setShowHints((current) => !current)}
+                  type="button"
+                >
+                  힌트 사용
+                </button>
+              </>
+            )}
           </div>
-          <button
-            className={`magnifier-button ${scanMode ? "active" : ""}`}
-            disabled={!hasMagnifier || status !== "playing"}
-            onClick={useMagnifier}
-          >
-            {scanMode ? "확인할 칸 선택 중" : hasMagnifier ? "돋보기 사용 가능" : "돋보기 없음"}
-          </button>
-          <button
-            aria-pressed={showHints}
-            className={`hint-toggle ${showHints ? "active" : ""}`}
-            onClick={() => setShowHints((current) => !current)}
-            type="button"
-          >
-            힌트 표시
-          </button>
           <p>
             {revealedSafeCells}/{totalSafeCells} · {message}
           </p>

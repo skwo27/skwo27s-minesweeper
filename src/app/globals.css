@@ -11,8 +11,6 @@
   --danger: #ff1d00;
   --safe: #008000;
   --board-size: min(calc(100vw - 64px), 520px);
-  --magnifier-button-width: 160px;
-  --hint-button-width: 112px;
 }
 
 html {
@@ -131,9 +129,7 @@ footer {
 }
 
 .face-button,
-.magnifier-button,
-.difficulty-tabs button,
-.hint-toggle {
+.tool-actions button {
   border-radius: 0;
   background: var(--classic-face);
   border-top: 4px solid var(--classic-light);
@@ -144,9 +140,7 @@ footer {
 }
 
 .face-button:active,
-.magnifier-button:active,
-.difficulty-tabs button:active,
-.hint-toggle:active {
+.tool-actions button:active {
   border-top-color: var(--classic-dark);
   border-left-color: var(--classic-dark);
   border-right-color: var(--classic-light);
@@ -186,7 +180,7 @@ footer {
 
 .tool-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--magnifier-button-width) var(--hint-button-width);
+  grid-template-columns: 1fr;
   align-items: center;
   gap: 8px;
   width: var(--board-size);
@@ -200,26 +194,13 @@ footer {
   border-bottom: 4px solid var(--classic-light);
 }
 
-.difficulty-tabs {
+.tool-actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 5px;
 }
 
-.difficulty-tabs button {
-  min-height: 34px;
-  padding: 0 10px;
-  font-size: 0.86rem;
-  font-weight: 800;
-}
-
-.difficulty-tabs button.active {
-  color: #fff;
-  background: #000080;
-}
-
-.magnifier-button {
-  width: var(--magnifier-button-width);
+.tool-actions button {
   min-height: 34px;
   padding: 0 10px;
   font-size: 0.86rem;
@@ -228,32 +209,16 @@ footer {
   white-space: nowrap;
 }
 
-.magnifier-button.active {
+.tool-actions button.active {
   color: #fff;
   background: #000080;
+  cursor: default;
+  opacity: 1;
 }
 
-.magnifier-button:disabled {
+.tool-actions button:disabled {
   color: #777;
   cursor: not-allowed;
-}
-
-.hint-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--hint-button-width);
-  min-height: 34px;
-  padding: 0 10px;
-  font-size: 0.86rem;
-  font-weight: 800;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.hint-toggle.active {
-  color: #fff;
-  background: #000080;
 }
 
 .tool-row p {
@@ -424,13 +389,8 @@ footer {
     grid-template-columns: 1fr;
   }
 
-  .difficulty-tabs {
+  .tool-actions {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .magnifier-button,
-  .hint-toggle {
-    width: 100%;
   }
 
   .mine-board {
@@ -496,13 +456,11 @@ footer {
     border-width: 3px;
   }
 
-  .difficulty-tabs {
+  .tool-actions {
     gap: 4px;
   }
 
-  .difficulty-tabs button,
-  .magnifier-button,
-  .hint-toggle {
+  .tool-actions button {
     min-height: 32px;
     padding: 0 6px;
     border-width: 3px;
@@ -586,9 +544,7 @@ footer {
     height: 24px;
   }
 
-  .difficulty-tabs button,
-  .magnifier-button,
-  .hint-toggle {
+  .tool-actions button {
     min-height: 30px;
     font-size: 0.72rem;
   }

@@ -21,8 +21,8 @@ type Difficulty = {
 
 const DIFFICULTIES: Difficulty[] = [
   { label: "쉬움", width: 9, height: 9, mines: 10 },
-  { label: "보통", width: 14, height: 14, mines: 40 },
-  { label: "도전", width: 22, height: 22, mines: 60 },
+  { label: "보통", width: 14, height: 14, mines: 30 },
+  { label: "도전", width: 22, height: 22, mines: 100 },
 ];
 
 const CUSTOM_MIN_SIZE = 5;

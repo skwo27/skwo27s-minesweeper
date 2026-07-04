@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<h1>Vercel 링크 https://skwo27s-minesweeper.vercel.app/</h1>
 
-## Getting Started
+# 찍기 없는 지뢰찾기
 
-First, run the development server:
+운이 아닌 **실력만으로 클리어할 수 있는 지뢰찾기**입니다.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+기존 지뢰찾기에서는 논리적으로 해결할 수 없는 상황이 발생하여 플레이어가 결국 추측(Guess)에 의존해야 하는 경우가 있습니다. 이 프로젝트는 이러한 문제를 해결하여 모든 게임을 논리적으로 해결할 수 있도록 설계되었습니다.
+
+## 프로젝트 소개
+
+기존 지뢰찾기는 다음과 같은 문제가 있습니다.
+
+- 두 칸 중 하나를 선택해야 하는 50:50 상황
+- 아무리 정확하게 플레이해도 운에 의존해야 하는 경우
+- 실력과 관계없이 게임이 종료되는 상황
+
+이 프로젝트는 이러한 문제를 해결하기 위해 제작되었습니다.
+
+## 주요 기능
+
+- 일반 지뢰찾기 게임
+- 난이도 선택
+- 게임 시간 측정
+- 사용자 지정 맵 생성
+- 추측이 필요한 상황에서 사용할 수 있는 힌트 기능
+- 반응형 UI
+
+## 찍기 방지 시스템
+
+게임 진행 중 논리적으로 더 이상 안전한 칸을 찾을 수 없는 경우, 플레이어는 **힌트(돋보기) 기능**을 사용할 수 있습니다.
+
+힌트는 임의의 안전한 칸 하나를 알려주며, 이를 통해 운이 아닌 논리만으로 게임을 이어갈 수 있습니다.
+
+이 기능을 통해 기존 지뢰찾기의 가장 큰 문제였던 '찍기'를 제거하면서도 게임의 재미는 유지하도록 설계했습니다.
+
+# 기술 스택
+
+| 분야 | 기술 |
+|------|------|
+| Frontend | React |
+| Language | TypeScript |
+| Styling | Emotion |
+| Deployment | Vercel |
+
+## 프로젝트 구조
+
+```
+src
+├── components
+├── hooks
+├── pages
+├── styles
+├── utils
+└── types
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 라이선스
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT License

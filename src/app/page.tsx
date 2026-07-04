@@ -194,7 +194,31 @@ const parseCustomHeight = (value: string) => {
 };
 
 const getMaxCustomMines = (width: number, height: number) =>
-  Math.max(1, width * height - 1);
+  Math.max(1, width * height - 9);
+
+const parseCustomMines = (value: string) => {
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed)) {
+    return null;
+  }
+
+  return parsed;
+};
+
+const getCustomMineValidationMessage = (value: string, max: number) => {
+  const mines = parseCustomMines(value);
+
+  if (mines === null) {
+    return `지뢰는 1~${max}개 사이의 정수로 입력하세요.`;
+  }
+
+  if (mines < 1 || mines > max) {
+    return `지뢰는 1~${max}개 사이로 입력하세요.`;
+  }
+
+  return "";
+};
 
 const createCustomDifficulty = (width: number, height: number, mines: number): Difficulty => ({
   label: "사용자",
@@ -252,11 +276,14 @@ export default function Home() {
     parseCustomSize(customWidthInput, CUSTOM_MAX_WIDTH),
     parseCustomHeight(customHeightInput),
   );
-  const customCellCount =
-    parseCustomSize(customWidthInput, CUSTOM_MAX_WIDTH) * parseCustomHeight(customHeightInput);
+  const customMineValidationMessage = getCustomMineValidationMessage(
+    customMinesInput,
+    customMineLimit,
+  );
   const toolMessage =
     toolMode === "custom"
-      ? `열은 ${CUSTOM_MIN_SIZE}~${CUSTOM_MAX_WIDTH}개, 행은 ${CUSTOM_MIN_SIZE}개 이상, 지뢰는 행과 열의 곱(${customCellCount})보다 작게 입력하세요.`
+      ? customMineValidationMessage ||
+        `열 ${CUSTOM_MIN_SIZE}~${CUSTOM_MAX_WIDTH}개 · 행 ${CUSTOM_MIN_SIZE}개 이상 · 지뢰 1~${customMineLimit}개`
       : toolMode === "difficulty"
         ? "난이도를 변경하면 현재 게임 진행사항이 초기화됩니다."
       : `${revealedSafeCells}/${totalSafeCells} · ${message}`;
@@ -470,10 +497,22 @@ export default function Home() {
     const width = parseCustomSize(customWidthInput, CUSTOM_MAX_WIDTH);
     const height = parseCustomHeight(customHeightInput);
     const mineLimit = getMaxCustomMines(width, height);
-    const mines = clamp(Number.parseInt(customMinesInput, 10) || 1, 1, mineLimit);
+    const mineValidationMessage = getCustomMineValidationMessage(customMinesInput, mineLimit);
 
     setCustomWidthInput(String(width));
     setCustomHeightInput(String(height));
+
+    if (mineValidationMessage) {
+      setMessage(mineValidationMessage);
+      return;
+    }
+
+    const mines = parseCustomMines(customMinesInput);
+
+    if (mines === null) {
+      return;
+    }
+
     setCustomMinesInput(String(mines));
     resetGame(createCustomDifficulty(width, height, mines));
   };

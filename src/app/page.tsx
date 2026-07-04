@@ -220,6 +220,10 @@ const getCustomMineValidationMessage = (value: string, max: number) => {
   return "";
 };
 
+const isTypingTarget = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  (target.isContentEditable || ["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName));
+
 const createCustomDifficulty = (width: number, height: number, mines: number): Difficulty => ({
   label: "사용자",
   width,
@@ -244,6 +248,8 @@ export default function Home() {
   const [message, setMessage] = useState("첫 칸은 언제나 안전합니다.");
   const longPressTimerRef = useRef<number | null>(null);
   const longPressHandledRef = useRef(false);
+  const shortcutActionsRef = useRef<(() => void)[]>([]);
+  const backShortcutActionRef = useRef<(() => void) | null>(null);
 
   const logic = useMemo(() => getLogicState(board, difficulty), [board, difficulty]);
   const magnifierTargets = useMemo(() => {
@@ -525,6 +531,74 @@ export default function Home() {
     event.preventDefault();
     applyCustomDifficulty();
   };
+
+  useEffect(() => {
+    shortcutActionsRef.current =
+      toolMode === "custom"
+        ? []
+        : toolMode === "difficulty"
+          ? [
+              () => selectDifficulty(DIFFICULTIES[0]),
+              () => selectDifficulty(DIFFICULTIES[1]),
+              () => selectDifficulty(DIFFICULTIES[2]),
+              openCustomSettings,
+            ]
+          : [
+              () => setToolMode("difficulty"),
+              useMagnifier,
+              () => setShowHints((current) => !current),
+            ];
+    backShortcutActionRef.current =
+      toolMode === "custom"
+        ? () => setToolMode("difficulty")
+        : toolMode === "difficulty"
+          ? () => setToolMode("main")
+          : null;
+  });
+
+  useEffect(() => {
+    const handleShortcut = (event: globalThis.KeyboardEvent) => {
+      if (
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        isTypingTarget(event.target)
+      ) {
+        return;
+      }
+
+      if (event.key === "Backspace") {
+        const backAction = backShortcutActionRef.current;
+
+        if (!backAction) {
+          return;
+        }
+
+        event.preventDefault();
+        backAction();
+        return;
+      }
+
+      const shortcutIndex = Number.parseInt(event.key, 10) - 1;
+
+      if (!Number.isInteger(shortcutIndex) || shortcutIndex < 0) {
+        return;
+      }
+
+      const action = shortcutActionsRef.current[shortcutIndex];
+
+      if (!action) {
+        return;
+      }
+
+      event.preventDefault();
+      action();
+    };
+
+    window.addEventListener("keydown", handleShortcut);
+
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, []);
 
   const toolActionsClassName = [
     "tool-actions",

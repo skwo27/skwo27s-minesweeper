@@ -222,6 +222,25 @@ export default function Home() {
   const longPressHandledRef = useRef(false);
 
   const logic = useMemo(() => getLogicState(board, difficulty), [board, difficulty]);
+  const magnifierTargets = useMemo(() => {
+    const targets = new Set<number>();
+
+    board.forEach((cell, index) => {
+      if (cell.revealed || cell.flagged) {
+        return;
+      }
+
+      const isNextToRevealedCell = getNeighbors(index, difficulty.width, difficulty.height).some(
+        (neighbor) => board[neighbor].revealed,
+      );
+
+      if (isNextToRevealedCell) {
+        targets.add(index);
+      }
+    });
+
+    return targets;
+  }, [board, difficulty]);
   const remainingMines = difficulty.mines - board.filter((cell) => cell.flagged).length;
   const revealedSafeCells = countRevealedSafeCells(board);
   const totalSafeCells = board.length - difficulty.mines;
@@ -361,6 +380,11 @@ export default function Home() {
     }
 
     if (scanMode && status === "playing") {
+      if (!magnifierTargets.has(index)) {
+        setMessage("돋보기는 열린 칸과 맞닿은 닫힌 칸에만 사용할 수 있습니다.");
+        return;
+      }
+
       const result: ScanResult = board[index].mine ? "mine" : "safe";
 
       setScannedCells((current) => ({ ...current, [index]: result }));
@@ -417,8 +441,13 @@ export default function Home() {
       return;
     }
 
+    if (magnifierTargets.size === 0) {
+      setMessage("돋보기를 사용할 수 있는 인접 칸이 없습니다.");
+      return;
+    }
+
     setScanMode(true);
-    setMessage("돋보기를 쓸 칸을 하나 선택하세요. 칸은 열리지 않고 지뢰 여부만 확인합니다.");
+    setMessage("돋보기를 쓸 칸을 하나 선택하세요.");
   };
 
   const selectDifficulty = (nextDifficulty: Difficulty) => {
@@ -618,7 +647,7 @@ export default function Home() {
                   cell.flagged ? "flagged" : "",
                   cell.mine && cell.revealed ? "mine" : "",
                   scanResult ? `scanned-${scanResult}` : "",
-                  scanMode && !cell.revealed && !cell.flagged ? "scan-target" : "",
+                  scanMode && magnifierTargets.has(index) ? "scan-target" : "",
                   isHintSafe ? "hint-safe" : "",
                   isHintMine ? "hint-mine" : "",
                 ].join(" ")}
@@ -654,7 +683,7 @@ export default function Home() {
           <span className="desktop-note">우클릭으로 깃발을 꽂습니다.</span>
           <span className="mobile-note">길게 누르기로 깃발을 꽂습니다.</span>
           {" "}확정 가능한 안전 칸이나 지뢰가 없을 때만 돋보기가 지급되며, 돋보기는
-          선택한 칸의 지뢰 여부만 알려줍니다.
+          선택한 칸의 지뢰 여부를 알려줍니다.
         </p>
       </div>
     </section>

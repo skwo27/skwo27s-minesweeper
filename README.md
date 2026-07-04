@@ -1,4 +1,6 @@
-<h1>Vercel 링크 https://skwo27s-minesweeper.vercel.app/</h1>
+<h1>링크 https://skwo27s-minesweeper.vercel.app/</h1>
+
+<br>
 
 # 찍기 없는 지뢰찾기
 
@@ -23,7 +25,6 @@
 - 게임 시간 측정
 - 사용자 지정 맵 생성
 - 추측이 필요한 상황에서 사용할 수 있는 힌트 기능
-- 반응형 UI
 
 ## 찍기 방지 시스템
 

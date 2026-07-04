@@ -323,6 +323,10 @@ footer {
   background: #cacaca;
 }
 
+.cell:focus {
+  outline: 0;
+}
+
 .cell.revealed {
   border: 1px solid var(--classic-dark);
   background: var(--classic-open);

@@ -224,6 +224,12 @@ const isTypingTarget = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
   (target.isContentEditable || ["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName));
 
+const blurActiveElement = () => {
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+};
+
 const createCustomDifficulty = (width: number, height: number, mines: number): Difficulty => ({
   label: "사용자",
   width,
@@ -250,6 +256,7 @@ export default function Home() {
   const longPressHandledRef = useRef(false);
   const shortcutActionsRef = useRef<(() => void)[]>([]);
   const backShortcutActionRef = useRef<(() => void) | null>(null);
+  const resetShortcutActionRef = useRef<() => void>(() => {});
 
   const logic = useMemo(() => getLogicState(board, difficulty), [board, difficulty]);
   const magnifierTargets = useMemo(() => {
@@ -554,6 +561,7 @@ export default function Home() {
         : toolMode === "difficulty"
           ? () => setToolMode("main")
           : null;
+    resetShortcutActionRef.current = () => resetGame();
   });
 
   useEffect(() => {
@@ -567,6 +575,13 @@ export default function Home() {
         return;
       }
 
+      if (event.key.toLowerCase() === "r") {
+        event.preventDefault();
+        blurActiveElement();
+        resetShortcutActionRef.current();
+        return;
+      }
+
       if (event.key === "Backspace") {
         const backAction = backShortcutActionRef.current;
 
@@ -575,6 +590,7 @@ export default function Home() {
         }
 
         event.preventDefault();
+        blurActiveElement();
         backAction();
         return;
       }
@@ -592,6 +608,7 @@ export default function Home() {
       }
 
       event.preventDefault();
+      blurActiveElement();
       action();
     };
 

@@ -1,4 +1,4 @@
-<h1>Vercel 링크 https://skwo27s-minesweeper.vercel.app/</h1>
+<h1>링크 https://skwo27s-minesweeper.vercel.app/</h1>
 
 # 찍기 없는 지뢰찾기
 

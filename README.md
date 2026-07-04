@@ -1,6 +1,7 @@
 <h1>링크 https://skwo27s-minesweeper.vercel.app/</h1>
 
 <br>
+
 # 찍기 없는 지뢰찾기
 
 운이 아닌 **실력만으로 클리어할 수 있는 지뢰찾기**입니다.
